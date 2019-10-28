@@ -3,6 +3,20 @@ import * as Yup from 'yup';
 import Student from '../models/Student';
 
 class StudentController {
+  async index(req, res) {
+    const students = await Student.findAll();
+
+    return res.json(students);
+  }
+
+  async show(req, res) {
+    const student = await Student.findOne({
+      where: { name: req.params.name },
+    });
+
+    return res.json(student);
+  }
+
   async store(req, res) {
     const schema = Yup.object().shape({
       name: Yup.string().required(),
@@ -56,6 +70,14 @@ class StudentController {
     const { id, name, age, weight, height } = await student.update(req.body);
 
     return res.json({ id, name, email, age, weight, height });
+  }
+
+  async delete(req, res) {
+    const { student_id } = req.params;
+    const student = await Student.findOne({ where: { id: student_id } });
+    if (!student) return res.status(400).json({ error: 'Invalid id!' });
+    await Student.destroy({ where: { id: student_id } });
+    return res.json({ message: 'Student successfully removed!' });
   }
 }
 
