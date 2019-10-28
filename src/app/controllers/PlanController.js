@@ -1,23 +1,23 @@
 import * as Yup from 'yup';
-import Enrollment from '../models/Enrollment';
+import Plan from '../models/Plan';
 
-class EnrollmentController {
+class PlanController {
   async index(req, res) {
-    const enrollments = await Enrollment.findAll({
+    const plans = await Plan.findAll({
       order: [['title', 'DESC']],
     });
 
-    return res.json(enrollments);
+    return res.json(plans);
   }
 
   async show(req, res) {
-    const enrollment = await Enrollment.findOne({
+    const plan = await Plan.findOne({
       where: { id: req.params.id },
     });
 
-    if (!enrollment) return res.status(400).json({ error: 'Invalid id!' });
+    if (!Plan) return res.status(400).json({ error: 'Invalid id!' });
 
-    return res.json(enrollment);
+    return res.json(plan);
   }
 
   async store(req, res) {
@@ -32,14 +32,14 @@ class EnrollmentController {
 
     const { title } = req.body;
 
-    const invalidTitle = await Enrollment.findOne({ where: { title } });
+    const invalidTitle = await Plan.findOne({ where: { title } });
 
     if (invalidTitle)
       return res.status(400).json({ error: 'This plan already exists!' });
 
-    const enrollment = await Enrollment.create(req.body);
+    const plan = await Plan.create(req.body);
 
-    return res.json(enrollment);
+    return res.json(plan);
   }
 
   async update(req, res) {
@@ -53,25 +53,24 @@ class EnrollmentController {
       return res.status(400).json({ error: 'Invalid data!' });
 
     const { title } = req.body;
-    const validEnrollmentPlan = await Enrollment.findOne({ where: { title } });
+    const validPlan = await Plan.findOne({ where: { title } });
 
-    if (!validEnrollmentPlan)
-      res.status(400).json({ error: "This type of enrollment doesn't exist!" });
+    if (!validPlan) res.status(400).json({ error: "This plan doesn't exist!" });
 
-    const updatedPlan = await validEnrollmentPlan.update(req.body);
+    const updatedPlan = await validPlan.update(req.body);
 
     return res.json(updatedPlan);
   }
 
   async delete(req, res) {
-    const deleted = await Enrollment.destroy({
+    const deleted = await Plan.destroy({
       where: { id: req.params.id },
     });
 
     if (!deleted) return res.status(400).json({ error: 'Invalid id!' });
 
-    return res.json({ message: 'Enrollment type deleted!' });
+    return res.json({ message: 'Plan deleted!' });
   }
 }
 
-export default new EnrollmentController();
+export default new PlanController();
