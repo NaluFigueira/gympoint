@@ -3,7 +3,7 @@
 </h1>
 
 <h3 align="center">
-  Gympoint
+  Gympoint - Desafio Final do Bootcamp 9.0 da Rocketseat
 </h3>
 
 ### Descrição e tecnologias
