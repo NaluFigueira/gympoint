@@ -58,7 +58,7 @@ class EnrollmentController {
     const { student_id } = req.params;
     const { plan_id, start_date } = req.body;
 
-    const validStudent = await Student.findOne({ where: { id: student_id } });
+    const validStudent = await Student.findByPk(student_id);
 
     if (!validStudent)
       return res.status(401).json({ error: "This student doesn't exist!" });
@@ -70,7 +70,7 @@ class EnrollmentController {
         .status(401)
         .json({ error: 'This student is already enrolled!' });
 
-    const plan = await Plan.findOne({ where: { id: plan_id } });
+    const plan = await Plan.findByPk(plan_id);
 
     if (!plan)
       return res.status(400).json({ error: "This plan doesn't exist!" });
@@ -123,7 +123,7 @@ class EnrollmentController {
     const { plan_id, start_date } = req.body;
     const { enrollment_id } = req.params;
 
-    const plan = await Plan.findOne({ where: { id: plan_id } });
+    const plan = await Plan.findByPk(plan_id);
 
     if (!plan)
       return res.status(400).json({ error: "This plan doesn't exist!" });
@@ -135,9 +135,7 @@ class EnrollmentController {
 
     const end_date = addMonths(formattedDate, plan.duration);
     const price = plan.duration * plan.price;
-    const enrollment = await Enrollment.findOne({
-      where: { id: enrollment_id },
-    });
+    const enrollment = await Enrollment.findByPk(enrollment_id);
 
     if (!enrollment) {
       return res.json({ error: "This enrollment doesn't exist" });
@@ -155,9 +153,7 @@ class EnrollmentController {
 
   async delete(req, res) {
     const { enrollment_id } = req.params;
-    const enrollment = await Enrollment.findOne({
-      where: { id: enrollment_id },
-    });
+    const enrollment = await Enrollment.findByPk(enrollment_id);
     if (!enrollment) return res.status(400).json({ error: 'Invalid id!' });
     await Enrollment.destroy({ where: { id: enrollment_id } });
     return res.json({ message: 'Enrollment sucessfully removed!' });
