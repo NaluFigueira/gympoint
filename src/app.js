@@ -34,7 +34,7 @@ class App {
   exceptionHandler(){
     this.server.use( async(err,req,res,next) => {
       const errors = await new youch(err, req).toJSON();
-      return res.status(500).json(err);
+      return res.status(500).json(errors);
     })
   }
 }
