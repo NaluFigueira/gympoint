@@ -1,20 +1,21 @@
 import * as Yup from 'yup';
 
+import { Op } from 'sequelize';
 import Student from '../models/Student';
 
 class StudentController {
   async index(req, res) {
+    const { name } = req.query;
+    if (name) {
+      const student = await Student.findAll({
+        where: { name: { [Op.iLike]: `%${name}%` } },
+      });
+
+      return res.json(student);
+    }
     const students = await Student.findAll();
 
     return res.json(students);
-  }
-
-  async show(req, res) {
-    const student = await Student.findOne({
-      where: { name: req.params.name },
-    });
-
-    return res.json(student);
   }
 
   async store(req, res) {
@@ -47,6 +48,7 @@ class StudentController {
 
   async update(req, res) {
     const schema = Yup.object().shape({
+      id: Yup.number().required(),
       name: Yup.string(),
       email: Yup.string()
         .email()
@@ -61,22 +63,30 @@ class StudentController {
         .status(400)
         .json({ error: 'At least one of the fields is incorrect!' });
 
+    const student = await Student.findByPk(req.body.id);
+
+    if (!student) return res.status(400).json({ error: 'Invalid student id!' });
+
     const { email } = req.body;
-    const student = await Student.findOne({ where: { email } });
+    if (email && email !== student.email) {
+      const studentExists = await Student.findOne({ where: { email } });
 
-    if (!student)
-      return res.status(400).json({ error: "This student doesn't exist" });
+      if (studentExists)
+        return res
+          .status(400)
+          .json({ error: 'This email is already registred!' });
+    }
 
-    const { id, name, age, weight, height } = await student.update(req.body);
+    await student.update(req.body);
 
-    return res.json({ id, name, email, age, weight, height });
+    return res.json(student);
   }
 
   async delete(req, res) {
-    const { student_id } = req.params;
-    const student = await Student.findOne({ where: { id: student_id } });
-    if (!student) return res.status(400).json({ error: 'Invalid id!' });
-    await Student.destroy({ where: { id: student_id } });
+    const { id } = req.params;
+    const student = await Student.findByPk(id);
+    if (!student) return res.status(400).json({ error: 'Invalid student id!' });
+    await Student.destroy({ where: { id } });
     return res.json({ message: 'Student successfully removed!' });
   }
 }

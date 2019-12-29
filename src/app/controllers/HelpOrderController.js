@@ -42,14 +42,14 @@ class HelpOrderController {
     if (!(await schema.isValid(req.body)))
       return res.status(400).json({ error: 'Invalid data!' });
 
-    const { student_id } = req.params;
+    const { id } = req.params;
     const { question } = req.body;
 
-    const student = await Student.findByPk(student_id);
+    const student = await Student.findByPk(id);
 
     if (!student) return res.status(400).json("This student doesn't exist");
 
-    const helpOrder = await HelpOrder.create({ student_id, question });
+    const helpOrder = await HelpOrder.create({ student_id: id, question });
 
     return res.json(helpOrder);
   }

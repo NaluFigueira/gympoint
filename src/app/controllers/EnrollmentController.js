@@ -9,6 +9,7 @@ import EnrollmentMail from '../jobs/EnrollmentMail';
 class EnrollmentController {
   async index(req, res) {
     const enrollments = await Enrollment.findAll({
+      attributes: ['id', 'start_date', 'end_date', 'price', 'active'],
       order: [['id', 'ASC']],
       include: [
         {
@@ -29,11 +30,12 @@ class EnrollmentController {
 
   async show(req, res) {
     const enrollment = await Enrollment.findOne({
+      where: { id: req.params.id },
+      attributes: ['id', 'start_date', 'end_date', 'price', 'active'],
       include: [
         {
           model: Student,
           as: 'student',
-          where: { name: req.params.name },
           attributes: ['name'],
         },
         {
@@ -49,14 +51,15 @@ class EnrollmentController {
 
   async store(req, res) {
     const schema = Yup.object().shape({
+      student_id: Yup.number().required(),
       plan_id: Yup.number().required(),
+      start_date: Yup.date().required(),
     });
 
     if (!(await schema.isValid(req.body)))
       return res.status(400).json({ error: 'Invalid data' });
 
-    const { student_id } = req.params;
-    const { plan_id, start_date } = req.body;
+    const { plan_id, student_id, start_date } = req.body;
 
     const validStudent = await Student.findByPk(student_id);
 
@@ -113,6 +116,7 @@ class EnrollmentController {
 
   async update(req, res) {
     const schema = Yup.object().shape({
+      id: Yup.number().required(),
       plan_id: Yup.number().required(),
       start_date: Yup.date().required(),
     });
@@ -120,8 +124,7 @@ class EnrollmentController {
     if (!(await schema.isValid(req.body)))
       return res.status(400).json({ error: 'Invalid data' });
 
-    const { plan_id, start_date } = req.body;
-    const { enrollment_id } = req.params;
+    const { id, plan_id, start_date } = req.body;
 
     const plan = await Plan.findByPk(plan_id);
 
@@ -135,7 +138,7 @@ class EnrollmentController {
 
     const end_date = addMonths(formattedDate, plan.duration);
     const price = plan.duration * plan.price;
-    const enrollment = await Enrollment.findByPk(enrollment_id);
+    const enrollment = await Enrollment.findByPk(id);
 
     if (!enrollment) {
       return res.json({ error: "This enrollment doesn't exist" });
@@ -152,10 +155,10 @@ class EnrollmentController {
   }
 
   async delete(req, res) {
-    const { enrollment_id } = req.params;
-    const enrollment = await Enrollment.findByPk(enrollment_id);
+    const { id } = req.params;
+    const enrollment = await Enrollment.findByPk(id);
     if (!enrollment) return res.status(400).json({ error: 'Invalid id!' });
-    await Enrollment.destroy({ where: { id: enrollment_id } });
+    await Enrollment.destroy({ where: { id } });
     return res.json({ message: 'Enrollment sucessfully removed!' });
   }
 }

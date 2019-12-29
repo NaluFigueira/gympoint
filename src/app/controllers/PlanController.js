@@ -3,9 +3,7 @@ import Plan from '../models/Plan';
 
 class PlanController {
   async index(req, res) {
-    const plans = await Plan.findAll({
-      order: [['title', 'DESC']],
-    });
+    const plans = await Plan.findAll();
 
     return res.json(plans);
   }
@@ -44,6 +42,7 @@ class PlanController {
 
   async update(req, res) {
     const schema = Yup.object().shape({
+      id: Yup.number().required(),
       title: Yup.string(),
       duration: Yup.number(),
       price: Yup.number(),
@@ -52,14 +51,23 @@ class PlanController {
     if (!(await schema.isValid(req.body)))
       return res.status(400).json({ error: 'Invalid data!' });
 
+    const plan = await Plan.findByPk(req.body.id);
+
+    if (!plan)
+      return res.status(400).json({ error: "This plan doesn't exist!" });
+
     const { title } = req.body;
-    const validPlan = await Plan.findOne({ where: { title } });
+    if (title && title !== plan.title) {
+      const invalidPlan = await Plan.findOne({ where: { title } });
+      if (invalidPlan)
+        return res
+          .status(400)
+          .json({ error: 'This plan is already registred!' });
+    }
 
-    if (!validPlan) res.status(400).json({ error: "This plan doesn't exist!" });
+    await plan.update(req.body);
 
-    const updatedPlan = await validPlan.update(req.body);
-
-    return res.json(updatedPlan);
+    return res.json(plan);
   }
 
   async delete(req, res) {
