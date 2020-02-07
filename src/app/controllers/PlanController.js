@@ -76,8 +76,8 @@ class PlanController {
     });
 
     if (!deleted) return res.status(400).json({ error: 'Invalid id!' });
-
-    return res.json({ message: 'Plan deleted!' });
+    const plans = await Plan.findAll();
+    return res.json(plans);
   }
 }
 

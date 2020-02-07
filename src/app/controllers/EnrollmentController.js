@@ -15,12 +15,10 @@ class EnrollmentController {
         {
           model: Student,
           as: 'student',
-          attributes: ['name'],
         },
         {
           model: Plan,
           as: 'plan',
-          attributes: ['title'],
         },
       ],
     });
@@ -159,7 +157,21 @@ class EnrollmentController {
     const enrollment = await Enrollment.findByPk(id);
     if (!enrollment) return res.status(400).json({ error: 'Invalid id!' });
     await Enrollment.destroy({ where: { id } });
-    return res.json({ message: 'Enrollment sucessfully removed!' });
+    const enrollments = await Enrollment.findAll({
+      attributes: ['id', 'start_date', 'end_date', 'price', 'active'],
+      order: [['id', 'ASC']],
+      include: [
+        {
+          model: Student,
+          as: 'student',
+        },
+        {
+          model: Plan,
+          as: 'plan',
+        },
+      ],
+    });
+    return res.json(enrollments);
   }
 }
 

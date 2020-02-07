@@ -87,7 +87,8 @@ class StudentController {
     const student = await Student.findByPk(id);
     if (!student) return res.status(400).json({ error: 'Invalid student id!' });
     await Student.destroy({ where: { id } });
-    return res.json({ message: 'Student successfully removed!' });
+    const students = await Student.findAll();
+    return res.json(students);
   }
 }
 
