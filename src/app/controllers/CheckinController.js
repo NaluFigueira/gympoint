@@ -6,7 +6,10 @@ class CheckinController {
   async show(req, res) {
     const { id } = req.params;
 
-    const checkins = await Checkin.findAll({ where: { student_id: id } });
+    const checkins = await Checkin.findAll({
+      where: { student_id: id },
+      order: [['createdAt', 'DESC']],
+    });
 
     return res.json(checkins);
   }
